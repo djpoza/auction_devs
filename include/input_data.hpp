@@ -28,8 +28,8 @@ std::vector<std::vector<int>> read_matrix()
         // used for breaking words 
         std::stringstream s(line); 
 
-        // read every column data of a row and 
-        // store it in a string variable, 'word' 
+        // read every column data of a row and store
+        // it in a string variable, 'word' 
         while (getline(s, word, ';')) { 
 
             // add all the column data 

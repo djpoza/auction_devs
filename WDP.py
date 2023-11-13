@@ -90,7 +90,7 @@ def main():
             print(";",value_constraints)
             print(":",value_vars)
             #print("Problem solved in %f milliseconds" % solver.wall_time())
-            #print("Problem solved in %d iterations" % solver.iterations())
+            #print("Problem solved in %d iterations" % solver.iterations()) #This is a test
             #print("Problem solved in %d branch-and-bound nodes" % solver.nodes())
         else:
             print("The problem does not have an optimal solution.")
