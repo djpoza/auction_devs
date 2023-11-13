@@ -32,8 +32,7 @@ std::vector<std::vector<int>> read_matrix()
         // it in a string variable, 'word' 
         while (getline(s, word, ';')) { 
 
-            // add all the column data 
-            // of a row to a vector
+            // add all the column data of a row to a vector
             int nmbr = std::stoi(word); //stoi convert string to integer
             row.push_back(nmbr); 
         } 
