@@ -5,8 +5,8 @@
 #include <cadmium/lib/iestream.hpp>
 #include <vector>
 
-#include "bid.hpp"
-#include "ask.hpp"
+#include "buyer.hpp"
+#include "seller.hpp"
 #include "auctioneer.hpp"
 //#include "feedback.hpp"
 
@@ -31,16 +31,16 @@ namespace cadmium::example::auction {
 			addCoupling(auctioneer->allocation, alloc_out);	
 
 			for (int i=0; i<ID_b.size(); i++){ 
-				auto biders = addComponent<bid>("bid"+ std::to_string(ID_b[i]), ID_b[i], RPr[i], PPrStep, InitialPPr[i]); // +ID_b[i]
-				addCoupling(biders->out, auctioneer->bid_in);
-				addCoupling(auctioneer->bid_out, biders->in);
+				auto buyers = addComponent<buyer>("buyer"+ std::to_string(ID_b[i]), ID_b[i], RPr[i], PPrStep, InitialPPr[i]); // +ID_b[i]
+				addCoupling(buyers->out, auctioneer->bid_in);
+				addCoupling(auctioneer->bid_out, buyers->in);
 			}
 
 			
 			for (int i=0; i<ID_s.size(); i++){
-				auto askers = addComponent<ask>("ask"+ std::to_string(ID_s[i]), ID_s[i], PCost[i], APrStep, InitialAPr[i]); // +ID_s[i]		
-				addCoupling(askers->out, auctioneer->ask_in);			
-				addCoupling(auctioneer->ask_out, askers->in);
+				auto sellers = addComponent<seller>("seller"+ std::to_string(ID_s[i]), ID_s[i], PCost[i], APrStep, InitialAPr[i]); // +ID_s[i]		
+				addCoupling(sellers->out, auctioneer->ask_in);			
+				addCoupling(auctioneer->ask_out, sellers->in);
 			}
 	
 		}

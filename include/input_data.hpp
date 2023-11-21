@@ -2,101 +2,96 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <vector>
 
-struct info_agents{
-    std::vector<double> _Pr;
-    std::vector<double> _InitialPr;
+using namespace std;
+
+struct data_auction{
+    vector<double> _RPr;
+    vector<double> _InitialPPr;
+    int _PPrStep;
+    vector<double> _PCost;
+    vector<double> _InitialAPr;    
+    int _APrStep;
+    vector<vector<int>> _Matrix;
 };
 
-std::vector<std::vector<int>> read_matrix() 
+
+data_auction read_data(string name_file) 
 { 
+    data_auction local_data;
 	// File pointer 
-	std::fstream fin; 
-    // Open an existing file 
-	fin.open("matrix.txt", std::ios::in); 
-	// Read the Data from the file 
-	// as String Vector 
-	std::vector<std::vector<int>> matrix;
-    std::vector<int> row; 
-	std::string line, word; 
-
-    int i=0;
-    // read an entire row and 
-    // store it in a string variable 'line' 
-    while(getline(fin, line)){
-        row.clear(); 
-        // used for breaking words 
-        std::stringstream s(line); 
-
-        // read every column data of a row and store
-        // it in a string variable, 'word' 
-        while (getline(s, word, ';')) { 
-
-            // add all the column data of a row to a vector
-            int nmbr = std::stoi(word); //stoi convert string to integer
-            row.push_back(nmbr); 
-        } 
-        matrix.push_back(row);
-
-        i++;
-    } 
-
-	for(int j=0; j<matrix.size(); j++){
-        for(int k=0; k<matrix[0].size(); k++){
-            std::cout << matrix [j][k] << " ";
-        }
-        std::cout << std::endl;
-    }	
-	return matrix;
-}
-
-info_agents read_agents(std::string name_file) 
-{ 
-    info_agents local_agents;
-	// File pointer 
-	std::fstream fin; 
+	fstream fin; 
     
 	// Open an existing file 
-	fin.open(name_file, std::ios::in); 
+	fin.open(name_file, ios::in); 
 
 	// Read the Data from the file 
 	// as String Vector 
-    std::vector<double> row, _Pr, _InitialPr; 
-	std::string line, word; 
+    vector<double> row, _RPr, _InitialPPr, _PCost, _InitialAPr; 
+	string line, word;
+    int pr_step;
+    vector<vector<int>> _matrix;
+    vector<int> row_m;
 
     // read an entire row and 
     // store it in a string variable 'line'
-    int i = 0; 
-    while(getline(fin, line)){
-        row.clear(); 
+    int i = 0;
+    int line_nmbr = 1; 
+    while(getline(fin, line)){ //&& line_nmbr<13
+        row.clear();
+        row_m.clear();
         // used for breaking words 
-        std::stringstream s(line); 
+        stringstream s(line);
 
-        // read every column data of a row and 
-        // store it in a string variable, 'word' 
-        while (getline(s, word, ';')) { 
+        if (line_nmbr>13) {
+            while (getline(s, word, ';')) { 
 
-            // add all the column data 
-            // of a row to a vector
-            double nmbr = std::stof(word); //stoi convert string to integer
-            row.push_back(nmbr); 
-        } 
-
-        if (i==0){
-            local_agents._Pr = row;
-            for(int i=0; i<local_agents._Pr.size(); i++){
-            std::cout << local_agents._Pr[i] << " ";
-            }
-            std::cout << std::endl;
-        } else {
-            local_agents._InitialPr = row;
-            for(int i=0; i<local_agents._InitialPr.size(); i++){
-            std::cout << local_agents._InitialPr[i] << " ";
-            }
-            std::cout << std::endl;
+                // add all the column data of a row to a vector
+                int nmbr = stoi(word); //stoi convert string to integer
+                row_m.push_back(nmbr); 
+            } 
+            _matrix.push_back(row_m);
         }
-        i++;
+
+        if (line_nmbr%2==0) {
+            // read every column data of a row and 
+            // store it in a string variable, 'word' 
+
+            while (getline(s, word, ';')) { 
+
+                // add all the column data 
+                // of a row to a vector
+                if (i == 2|| i == 5) {
+                    int nmbr = stoi(word); //stoi convert string to integer
+                    pr_step = nmbr;
+                } else {
+                    double nmbr = stof(word); //stoi convert string to integer
+                    row.push_back(nmbr); 
+                }
+                
+            } 
+
+            if (i==0){
+                local_data._RPr = row;
+            } else if (i==1){
+                local_data._InitialPPr = row;
+            } else if (i==2) {
+                local_data._PPrStep = pr_step;
+            } else if (i==3) {
+                local_data._PCost = row;
+            } else if (i==4) {
+                local_data._InitialAPr = row;
+            } else if (i==5) {
+                local_data._APrStep = pr_step;
+            }
+            i++;
         
-    } 	
-	return local_agents;
+        }
+        line_nmbr ++;
+        
+    }
+    local_data._Matrix = _matrix;
+
+	return local_data;
 } 

@@ -90,14 +90,14 @@ namespace cadmium::example::auction {
 					
 					std::cout << ID_f << "-" << local_in.id << " - "<< local_in<< "\n";
 				*/
-					std::cout << ID_f << "-" << msg.id << " - "<< msg << "\n";
+					//std::cout << ID_f << "-" << msg.id << " - "<< msg << "\n";
 					if (ID_f == msg.id)
 					{
 						s.gotIt = msg.gotIt;
 						s.S1 = true;
 					}
 				}
-				std::cout << "\n";
+				//std::cout << "\n";
 			}
 			
 		}

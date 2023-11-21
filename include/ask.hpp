@@ -1,36 +1,117 @@
 #ifndef CADMIUM_EXAMPLE_AUCTION_ASK_HPP_
 #define CADMIUM_EXAMPLE_AUCTION_ASK_HPP_
 
-#include "./cadmium/core/modeling/coupled.hpp"
-#include <cadmium/lib/iestream.hpp>
-
-#include "filter.hpp"
-#include "seller.hpp"	
+#include <cadmium/core/modeling/atomic.hpp>
+#include <iostream>
 #include "feedback.hpp"
+#include "bidinfo.hpp"
 
 namespace cadmium::example::auction {
-	//! Coupled DEVS model of the experimental frame.
-	struct ask: public Coupled {
-		Port<Feedback> in;   //!< 
-		Port<Bidinfo> out;   //!< 
+	//! Class for representing the Generator DEVS model state.
+	struct AskState {
+		//double sigma;  //!< 
+		bool Notify;  //!< .
+		double AskPr;  //!< True/False variable inputted from the auctioneer.
+
+		//! Constructor function. It sets all the attributes to 0.
+		AskState(double x): Notify(true), AskPr(x) {} 
+	};
+
+	/**
+	 * Insertion operator for GeneratorState objects. It only displays the value of jobCount.
+	 * @param out output stream.
+	 * @param s state to be represented in the output stream.
+	 * @return output stream with jobCount already inserted.
+	 */
+	std::ostream& operator<<(std::ostream& out, const AskState& s) {
+		out << "{" << s.Notify <<"," << s.AskPr << "}";
+		return out;
+	}
+
+	//! Atomic DEVS model of a Job generator.
+	class Ask : public Atomic<AskState> { //! Atomic models MUST inherit from the cadmium::Atomic<S> class
+	 private:
+		int ID_s;                            //!< Time to wait between Job generations.
+		double PCost;
+		double APrStep;
+		double InitialAPr;
+	 public:
+		Port<Feedback> in;          //!< Input Port for receiving stop generating Job objects.
+		Port<Bidinfo> out;
+		//BigPort<Job> outGenerated;  //!< Output Port for sending new Job objects to be processed.
 
 		/**
-		 * Constructor function for the bid model.
-		 * @param id ID of the bid model.
-		 * @param jobPeriod Job generation period for the Generator model.
-		 * @param obsTime time to wait by the Transducer before asking the Generator to stop creating Job objects.
+		 * Constructor function for Generator DEVS model.
+		 * @param id model ID.
+		 * @param jobPeriod Job generation period.
 		 */
-		ask(const std::string& id, int ID_s, double PCost, double APrStep, double InitialAPr): Coupled(id) {
+		Ask(const std::string& id, int _ID, double _PCost, double _APrStep, double _InitialAPr): Atomic<AskState>(id, AskState(_InitialAPr)), ID_s(_ID), PCost(_PCost), APrStep(_APrStep), InitialAPr(_InitialAPr){//, jobPeriod(jobPeriod) {
 			in = addInPort<Feedback>("in");
 			out = addOutPort<Bidinfo>("out");
+			//s.Notify = true;
+			//s.PurPr = InitialPPr;
+			//outGenerated = addOutBigPort<Job>("outGenerated");
+		}
 
-			auto filter = addComponent<Filter>("filter_s-"+std::to_string(ID_s), ID_s); // +ID_s
-			auto seller = addComponent<Seller>("seller-"+std::to_string(ID_s), ID_s, PCost, APrStep, InitialAPr); //+ID_s
-			//auto ies = addComponent<lib::IEStream<Feedback>>("file", filepath);
+		/**
+		 * Updates GeneratorState::clock and GeneratorState::sigma and increments GeneratorState::jobCount by one.
+		 * @param s reference to the current generator model state.
+		 */
+		void internalTransition(AskState& s) const override {
+			if (s.Notify == true)
+			{
+				s.Notify = false;
+			}
+		}
 
-			addCoupling(in, filter->in);
-			addCoupling(filter->out, seller->in);
-			addCoupling(seller->out, out);
+		/**
+		 * Updates GeneratorState::clock and GeneratorState::sigma.
+		 * If it receives a true message via the Generator::inStop port, it passivates and stops generating Job objects.
+		 * @param s reference to the current generator model state.
+		 * @param e time elapsed since the last state transition function was triggered.
+		 * @param x reference to the atomic model input port set.
+		 */
+		void externalTransition(AskState& s, double e) const override {
+			//s.sigma = std::max(s.sigma - e, 0.);
+			Feedback local_in(0, false);
+			//Feedback local_in;
+			local_in = in->getBag().back();
+			if (local_in.gotIt == false && s.AskPr - APrStep >= PCost)
+			{
+				s.AskPr -= APrStep;
+				s.Notify = true;
+			}
+		}
+
+		/**
+		 * Sends a new Job that needs to be processed via the Generator::outGenerated port.
+		 * @param s reference to the current generator model state.
+		 * @param y reference to the atomic model output port set.
+		 */
+		void output(const AskState& s) const override {
+			if (s.Notify == true)
+			{
+				Bidinfo outmsg = {ID_s, s.AskPr};
+				out->addMessage(outmsg);
+				//out->addMessage(outmsg);
+			}
+			
+			// outGenerated->addMessage(Job(s.jobCount, s.clock + s.sigma)); // TODO we could also do this
+		}
+
+		/**
+		 * It returns the value of GeneratorState::sigma.
+		 * @param s reference to the current generator model state.
+		 * @return the sigma value.
+		 */
+		[[nodiscard]] double timeAdvance(const AskState& s) const override {
+			if (s.Notify == true)
+			{
+				return 1;
+			} else {
+				return std::numeric_limits<double>::infinity();
+			}
+			// std::numeric_limits<double>::infinity();
 		}
 	};
 }  //namespace cadmium::example::auction
