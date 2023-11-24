@@ -16,7 +16,7 @@
 #include "feedback.hpp"
 //#include "calling_python.hpp"
 
-int round = -1;
+int counter = -1;
 
 namespace cadmium::example::auction {
 	using namespace std;
@@ -100,13 +100,13 @@ namespace cadmium::example::auction {
 		void internalTransition(AuctioneerState& au) const override {
 			if (au.send_out == false )
 			{	
-				if (au.new_value == false && round >= 0) {
+				if (au.new_value == false && counter >= 0) {
 					au.send_allocation = true;
 					cout << "THIS IS THE FINAL ALLOCATION" << endl;
 				} else {
 
-					cout << "Round " << round << endl;
-					round ++;
+					cout << "Round " << counter << endl;
+					counter ++;
 
 					// "Solve the WDP"
 
@@ -252,8 +252,6 @@ namespace cadmium::example::auction {
 					//Si lo encuentra, actualizar el price y break
 					//Si el ID no esta en la lista, lo añado (añado ID + precio)
 					
-					std::cout << "Buyer bid size: " << au.buyer_bid.size() << "\n";
-
 					bool flag = false;
 					int index = 0;
 					for(int i=0; i<au.buyer_bid.size(); i++){
@@ -267,6 +265,9 @@ namespace cadmium::example::auction {
 					} else {
 						Agentinfo LV (buyer_local.id, buyer_local.Price);
 						au.buyer_bid.push_back(LV);
+					}
+					if (counter == 0){
+						std::cout << "Buyer_bid size: " << au.buyer_bid.size() << "\n";
 					}
 				}
 							
@@ -288,6 +289,9 @@ namespace cadmium::example::auction {
 					} else {
 						Agentinfo LV (seller_local.id, seller_local.Price);
 						au.seller_ask.push_back(LV);
+					}
+					if (counter == 0){
+						std::cout << "Seller_ask size: " << au.seller_ask.size() << "\n";
 					}
 				}
 			}
