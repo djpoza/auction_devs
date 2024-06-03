@@ -114,7 +114,7 @@ namespace cadmium::example::auction {
 
 					//Create string to call python file
 					std::stringstream ss;
-					std::string s = "python WDP.py ";
+					std::string s = "python3 WDP.py ";
 					// Reading matrix
 					for (int i=0; i<matrix.size(); i++) {
 						if(i != 0)
