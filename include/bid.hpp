@@ -5,16 +5,19 @@
 #include <iostream>
 #include "feedback.hpp"
 #include "bidinfo.hpp"
+#include "surplusinfo.hpp"
 
 namespace cadmium::example::auction {
 	//! Class for representing the Buyer DEVS model state.
 	struct BidState {
 		//double sigma;  //!< 
-		bool Notify;  //!< True/False variable to indicate the active/passive state of the model.
+		bool Notifyprice;  //!< True/False variable to indicate the active/passive state of the model.
+		bool Notifysurplus;  //!< True/False variable to indicate whether or not to notify the buyer's surplus
 		double PurPr;  //!< Variable to set the purchase price of the bid.
-
+		double Surplus; //!< Buyer surplus = reservation price - purchase price
+		int Round;
 		//! Constructor function. It sets all the attributes to 0.
-		BidState(double x): Notify(true), PurPr(x) {} 
+		BidState(double x): Notifyprice(true), Notifysurplus(false), PurPr(x), Surplus(0), Round(1) {} 
 	};
 
 	/**
@@ -24,7 +27,7 @@ namespace cadmium::example::auction {
 	 * @return output stream with Notify already inserted.
 	 */
 	std::ostream& operator<<(std::ostream& out, const BidState& s) {
-		out << "{" << s.Notify <<"," << s.PurPr << "}";
+		out << "{" << s.Notifyprice <<"," << s.Round << "," << s.PurPr << "," << s.Notifysurplus << "," << s.Surplus << "}";
 		return out;
 	}
 
@@ -38,6 +41,7 @@ namespace cadmium::example::auction {
 	 public:
 		Port<Feedback> in;         //!< Input Port for receiving the id of the item.
 		Port<Bidinfo> out;			//!< Input Port for receiving the feedback from the auctioneer.
+		Port<Surplusinfo> surpl;    // Output port to report surplus in the current round
 		//BigPort<Job> outGenerated;  //!< Output Port for sending new Job objects to be processed.
 
 		/**
@@ -48,6 +52,7 @@ namespace cadmium::example::auction {
 		Bid(const std::string& id, int _ID, double _RPr, double _PPrStep, double _InitialPPr): Atomic<BidState>(id, BidState(_InitialPPr)), ID_b(_ID), RPr(_RPr), PPrStep(_PPrStep), InitialPPr(_InitialPPr){//, jobPeriod(jobPeriod) {
 			in = addInPort<Feedback>("in");
 			out = addOutPort<Bidinfo>("out");
+			surpl = addOutPort<Surplusinfo>("surplus");
 			//RPr = RPr_i;
 			//PPrStep = PPrStep_i;
 			//InitialPPr = InitialPPr_i;
@@ -61,9 +66,13 @@ namespace cadmium::example::auction {
 		 * @param s reference to the current generator model state.
 		 */
 		void internalTransition(BidState& s) const override {
-			if (s.Notify == true)
+			if (s.Notifyprice == true)
 			{
-				s.Notify = false;
+				s.Notifyprice = false;
+			}
+			if (s.Notifysurplus == true)
+			{
+				s.Notifysurplus = false;
 			}
 		}
 
@@ -80,10 +89,19 @@ namespace cadmium::example::auction {
 			Feedback local_in(0, false);
 			//Feedback local_in;
 			local_in = in->getBag().back();
+			s.Round +=1;
+			//CRM - Calculate my surplus
+			if(local_in.gotIt == false){
+				s.Surplus = 0;
+			}else{
+				s.Surplus = RPr - s.PurPr;
+			}
+			s.Notifysurplus = true;
+			//CRM - Update purchase price if I did not get the item
 			if (local_in.gotIt == false && s.PurPr + PPrStep <= RPr)
 			{
 				s.PurPr += PPrStep;
-				s.Notify = true;
+				s.Notifyprice = true;
 			}
 		}
 
@@ -93,10 +111,15 @@ namespace cadmium::example::auction {
 		 * @param y reference to the atomic model output port set.
 		 */
 		void output(const BidState& s) const override {
-			if (s.Notify == true)
+			if (s.Notifyprice == true)
 			{
 				Bidinfo outmsg = {ID_b, s.PurPr};
 				out->addMessage(outmsg);
+				
+			}
+			if(s.Notifysurplus == true){
+				Surplusinfo surp = {s.Round - 1, s.Surplus};
+				surpl ->addMessage(surp);
 			}
 			
 			// outGenerated->addMessage(Job(s.jobCount, s.clock + s.sigma)); // TODO we could also do this
@@ -108,7 +131,7 @@ namespace cadmium::example::auction {
 		 * @return the sigma value.
 		 */
 		[[nodiscard]] double timeAdvance(const BidState& s) const override {
-			if (s.Notify == true)
+			if (s.Notifyprice == true || s.Notifysurplus == true)
 			{
 				return 1.0;
 			} else {

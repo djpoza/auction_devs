@@ -11,11 +11,11 @@ def create_data_model(matrixData, RPiData, PCjData):
     #print("\nmatrix type: ", type(data["matrix"]))
     #print(data["matrix"])
     
-    data["RPi"] = RPiData 
+    data["RPi"] = RPiData #Purchase prices
     #print("RPi type: ", type(data["RPi"]))
     #print(data["RPi"])
     
-    data["PCj"] = PCjData 
+    data["PCj"] = PCjData #Ask prices
     #print("PCj type: ", type(data["PCj"]))
     #print(data["PCj"])
     

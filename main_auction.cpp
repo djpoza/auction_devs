@@ -7,6 +7,7 @@
 #include <limits>
 #include "auction.hpp"
 #include "input_data.hpp"
+#include "auction_analysis.hpp"
 
 using namespace cadmium::example::auction;
 
@@ -77,7 +78,10 @@ int main(int argc, char *argv[]) {
         cout << endl;
     }
     
-    auto model = std::make_shared<auction>("auction",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, roundTime); 
+    // Modify the following line to include the compilation of the new auction_analysis model
+    //auto model = std::make_shared<auction>("auction",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, roundTime); 
+    auto model = std::make_shared<auction_analysis>("auction_analysis",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, roundTime);
+
 
    // auto model = std::make_shared<auction>("auction",{"1","2","3"}, {40.0,30.0,20.0}, 5.0, {20.0,15.0,10.0}, {"1","2","3"}, {20.0,30.0,50.0}, 10.0, {30.0,50.0,70.0}, 4.0); 
 
@@ -88,6 +92,9 @@ int main(int argc, char *argv[]) {
     auto rootCoordinator = cadmium::RootCoordinator(model);
     auto logger = std::make_shared<cadmium::CSVLogger>("log_auction.csv", ";");
     rootCoordinator.setLogger(logger);
+
+    // *** POZA JUNE 2024 ***
+    remove("output.csv"); // delete previous simulations' output file before the current simulation starts
 
     // To start the simulation we 1) start, 2) simulate 3) stop.
     rootCoordinator.start();

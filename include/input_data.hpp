@@ -6,6 +6,8 @@
 
 using namespace std;
 
+
+
 struct data_auction{
     vector<double> _RPr;
     vector<double> _InitialPPr;
@@ -15,7 +17,6 @@ struct data_auction{
     int _APrStep;
     vector<vector<int>> _Matrix;
 };
-
 
 data_auction read_data(string name_file) 
 { 

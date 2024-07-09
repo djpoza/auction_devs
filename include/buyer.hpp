@@ -7,12 +7,15 @@
 #include "filter.hpp"
 #include "bid.hpp"	
 #include "feedback.hpp"
+#include "surplusinfo.hpp"
+
 
 namespace cadmium::example::auction {
 	//! Coupled DEVS model of the experimental frame.
 	struct buyer: public Coupled {
 		Port<Feedback> in;   //!< 
-		Port<Bidinfo> out;   //!< 
+		Port<Bidinfo> bidValue;   //!< 
+		Port<Surplusinfo> surplusValue;   //!<  This new port will cointain the buyer's surplus in the current round
 
 		/**
 		 * Constructor function for the bid model.
@@ -22,7 +25,8 @@ namespace cadmium::example::auction {
 		 */
 		buyer(const std::string& id, int ID_b, double RPr, double PPrStep, double InitialPPr): Coupled(id) {
 			in = addInPort<Feedback>("in");
-			out = addOutPort<Bidinfo>("out");
+			bidValue = addOutPort<Bidinfo>("bidValue");
+			surplusValue = addOutPort<Surplusinfo>("surplusValue"); 
 
 			auto filter = addComponent<Filter>("filter_b-"+std::to_string(ID_b), ID_b); // +std::string(id)
 			auto bid = addComponent<Bid>("bid-"+std::to_string(ID_b), ID_b, RPr, PPrStep, InitialPPr); //+std::string(id)
@@ -30,7 +34,8 @@ namespace cadmium::example::auction {
 
 			addCoupling(in, filter->in);
 			addCoupling(filter->out, bid->in);
-			addCoupling(bid->out, out);
+			addCoupling(bid->out, bidValue);
+			addCoupling(bid->surpl, surplusValue);
 		}
 	};
 }  //namespace cadmium::example::auction
