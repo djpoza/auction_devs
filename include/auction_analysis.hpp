@@ -16,6 +16,7 @@ namespace cadmium::example::auction {
 		Port<double> social_welfare;
 		Port<double> total_buyer_surplus;
 		Port<double> total_seller_surplus;
+		Port<double> total_auctioneer_surplus;
 
 		/**
 		 * Constructor function for the auction analysis model.
@@ -30,7 +31,8 @@ namespace cadmium::example::auction {
 			auction_finished = addOutPort<bool>("auction_finished");
 			social_welfare = addOutPort<double>("social_welfare");
 			total_buyer_surplus = addOutPort<double>("total_buyer_surplus"); 
-			total_seller_surplus = addOutPort<double>("total_seller_surplus"); 
+			total_seller_surplus = addOutPort<double>("total_seller_surplus");
+			total_auctioneer_surplus = addOutPort<double>("total_auctioneer_surplus");
 			
 			auto analysis = addComponent<Analysis>("analysis", ID_b.size(), ID_s.size()); //Fijarme en el constructor de cada un o de los dos modelos
 			//Analysis(const std::string& id, int _num_buyers, int _num_sellers): Atomic<AnalyisState>(id, AnalysisState()), num_buyers(_num_buyers), num_sellers(_num_sellers){
@@ -43,7 +45,8 @@ namespace cadmium::example::auction {
 			addCoupling(analysis->out_total_surplus, social_welfare);	
 			addCoupling(analysis->out_buyer_surplus, total_buyer_surplus);
 			addCoupling(analysis->out_seller_surplus, total_seller_surplus);
-
+			addCoupling(analysis->out_auctioneer_surplus, total_auctioneer_surplus);
+			
 			// July 5: David adds these 3 missing couplings:
 			addCoupling(auction_comp->buyersurpl, analysis->in_buyer);
 			addCoupling(auction_comp->sellersurpl, analysis->in_seller);	

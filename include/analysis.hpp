@@ -18,12 +18,13 @@ namespace cadmium::example::auction {
 		bool all_data_received;  //!< True/False variable to indicate the active/passive state of the model.
 		double total_surplus_buyers;  //!< Sum of buyer surplus
 		double total_surplus_sellers;  //!< Sum of seller surplus
+		double total_surplus_auctioneer; // Auctioneer's surplus
 		double total_surplus;  //!< Sum of buyer surplus + seller surplus + auctioneer surplus
 		int received; // Count the number of messages received: social welfare must be calculated only when the information from ALL the agents have been received
 		int round;
 
 		//! Constructor function. 
-		AnalysisState(): all_data_received(false), total_surplus_buyers(0), total_surplus_sellers(0), total_surplus(0), received(0), round(1) {}
+		AnalysisState(): all_data_received(false), total_surplus_buyers(0), total_surplus_sellers(0), total_surplus_auctioneer(0), total_surplus(0), received(0), round(1) {}
 	};
 
 	/**
@@ -33,7 +34,7 @@ namespace cadmium::example::auction {
 	 * @return output stream with S1 already inserted.
 	 */
 	std::ostream& operator<<(std::ostream& out, const AnalysisState& s) {
-		out << "{" << s.round << "," << s.total_surplus_buyers << "," << s.total_surplus_sellers << "," << s.total_surplus << "}";
+		out << "{" << s.round << "," << s.total_surplus_buyers << "," << s.total_surplus_sellers << "," << s.total_surplus_auctioneer << "," << s.total_surplus << "}";
 		return out;
 	}
 
@@ -52,6 +53,7 @@ namespace cadmium::example::auction {
 		Port<Surplusinfo> in_auctioneer;     //!< Input Port for receiving the auctioneer surplus
 		Port<double> out_total_surplus;	 	 //!< Output Port for sending the social welfare in the current round
 		Port<double> out_buyer_surplus;		 //!< Output Port for sending the total buyer surplus in the current round
+		Port<double> out_auctioneer_surplus; //!< Output Port for sending the auctioneer surplus in the current round
 		Port<double> out_seller_surplus;     //!< Output Port for sending the total seller surplus in the current round
 	
 		/**
@@ -61,14 +63,14 @@ namespace cadmium::example::auction {
 		 */ 
 			
 		Analysis(const std::string& id, int _num_buyers, int _num_sellers): Atomic<AnalysisState>(id, AnalysisState()), num_buyers(_num_buyers), num_sellers(_num_sellers){
-			//num_buyers =_num_buyers; (es equivañente a lo anterior)
+			//num_buyers =_num_buyers; (es equivalente a lo anterior)
 			in_buyer = addInPort<Surplusinfo>("in_buyer");
 			in_seller = addInPort<Surplusinfo>("in_seller");
 			in_auctioneer = addInPort<Surplusinfo>("in_auctioneer");
 			out_total_surplus = addOutPort<double>("out_total_surplus");
 			out_buyer_surplus = addOutPort<double>("out_buyer_surplus");
 			out_seller_surplus = addOutPort<double>("out_seller_surplus");
-
+			out_auctioneer_surplus = addOutPort<double>("out_auctioneer_surplus");
 		}
 
 		/**
@@ -83,6 +85,7 @@ namespace cadmium::example::auction {
 				s.total_surplus_buyers = 0;
 				s.total_surplus_sellers = 0;
 				s.total_surplus = 0;
+				s.total_surplus_auctioneer = 0;
 				s.round += 1;
 
 			}
@@ -90,8 +93,6 @@ namespace cadmium::example::auction {
 		}
 
 		/**
-		 * Updates AnalysisState::S1 and FilterState::gotIt.
-		 * If it receives a true message via the Filter::inItemId port, it activates and reads the message of that input port.
 		 * @param s reference to the current filter model state.
 		 * @param e time elapsed since the last state transition function was triggered.
 		 * @param x reference to the atomic model input port set.
@@ -102,8 +103,8 @@ namespace cadmium::example::auction {
 				for (auto& buyer_local: in_buyer->getBag()){ //the bag (array) may contain one or more elements (i.e., messages). We iterate over all the elements.
 				                                             // We use auto but we alreday know that messages will be of the type surplusinfo
 
-					std::cout << "Analysis' round: " << s.round << endl;
-					std::cout << "Buyer's round: " << buyer_local.round << endl;
+					//std::cout << "Analysis' round: " << s.round << endl;
+					//std::cout << "Buyer's round: " << buyer_local.round << endl;
 					if(buyer_local.round == s.round){
 						s.received +=1;
 						s.total_surplus_buyers += buyer_local.surplus;
@@ -119,7 +120,7 @@ namespace cadmium::example::auction {
 			if (! in_seller->empty()){
 				for (auto& seller_local: in_seller->getBag()){ //en la bolsa (array) puedo tener uno o varios elementos (mensajes)
 					//std::cout << "Analysis' round: " << s.round << endl;
-					std::cout << "Seller's round: " << seller_local.round << endl;
+					//std::cout << "Seller's round: " << seller_local.round << endl;
 					
 					if(seller_local.round == s.round){
 						s.received +=1;
@@ -134,12 +135,13 @@ namespace cadmium::example::auction {
 			}
 
 			if (! in_auctioneer->empty()){
-					Surplusinfo auctioneer_local(0,0); //creamos la variable porque no es un tipo de dato básico (int, etc). Creamos objeto de tipo surplus y le damos los valores por defecto (ver definición de surplusinfo)
+					Surplusinfo auctioneer_local(0,0); //we create this variable as the received info is not a basic variable (int, etc). Creamos objeto de tipo surplus y le damos los valores por defecto (ver definición de surplusinfo)
 					auctioneer_local = in_auctioneer->getBag().back(); //cogemos el último porque asumimos que solo va a haber uno.
-					std::cout << "Auctioneer's round: " << auctioneer_local.round << endl;
-					std::cout << "Auctioneer surplus: " << auctioneer_local.surplus << endl;
+					//std::cout << "Auctioneer's round: " << auctioneer_local.round << endl;
+					//std::cout << "Auctioneer surplus: " << auctioneer_local.surplus << endl;
 					if(auctioneer_local.round == s.round){
 						s.received +=1;
+						s.total_surplus_auctioneer = auctioneer_local.surplus;
 						s.total_surplus += auctioneer_local.surplus;
 					}
 					else  {
@@ -166,6 +168,7 @@ namespace cadmium::example::auction {
 				out_total_surplus->addMessage(s.total_surplus);
 				out_buyer_surplus->addMessage(s.total_surplus_buyers);	
 				out_seller_surplus->addMessage(s.total_surplus_sellers);
+				out_auctioneer_surplus->addMessage(s.total_surplus_auctioneer);
 
 				//write_to_csv(s.round, s.total_surplus_buyers, s.total_surplus_sellers, s.total_surplus);
 				ofstream outputFile;
@@ -173,10 +176,10 @@ namespace cadmium::example::auction {
    	 			if (outputFile.is_open()) {
    	    		 	// Add headers if the file is open
    	    		 	if (outputFile.tellp() == 0) {
-   	     		   	outputFile << "Round number,Buyers' surplus,Seller's surplus,Social Welfare\n";
+   	     		   	outputFile << "Round number,Buyers' surplus,Seller's surplus,Auctioneer's surplus,Social Welfare\n";
    	    	 		}
    	     			// Write values of count and objective_function on a new line of the csv file
-   	     			outputFile << s.round << "," << s.total_surplus_buyers << "," << s.total_surplus_sellers << "," << s.total_surplus << "\n";
+   	     			outputFile << s.round << "," << s.total_surplus_buyers << "," << s.total_surplus_sellers << "," << s.total_surplus_auctioneer << "," << s.total_surplus << "\n";
 			 	    outputFile.close();
   	  				} else {
   	      				cerr << "Error when opening file" << endl;
@@ -202,22 +205,7 @@ namespace cadmium::example::auction {
 		}
 	};
 
-				//  Function to write in the .csv file
-				void write_to_csv(int current_round, float b_surplus, float s_surplus, float t_surplus) {
-  	  				ofstream outputFile;
-  	  				outputFile.open("output.csv", ios::app);  // Open in append mode
-   	 				if (outputFile.is_open()) {
-   	    		 		// Add headers if the file is open
-   	    		 		if (outputFile.tellp() == 0) {
-   	     		   	 	outputFile << "Round number,Buyers' surplus,Seller's surplus,Social Welfare\n";
-   	    	 			}
-   	     				// Write values of count and objective_function on a new line of the csv file
-   	     				outputFile << current_round << "," << b_surplus << "," << s_surplus << "," << t_surplus << "\n";
-			 	     	outputFile.close();
-  	  					} else {
-  	      					cerr << "Error when opening file" << endl;
-			 	  		}
-				}
+			
 
 }  //namespace cadmium::example::gpt
 
