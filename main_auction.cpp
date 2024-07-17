@@ -78,6 +78,8 @@ int main(int argc, char *argv[]) {
         cout << endl;
     }
     
+    //Hard coded y cascadear (revisar los constructores de los modelos que hay debajo para que recepcionen el valor. El orden de los parámetros matters)
+    double maximum_social_welfare = 150;
     // Modify the following line to include the compilation of the new auction_analysis model
     //auto model = std::make_shared<auction>("auction",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, roundTime); 
     auto model = std::make_shared<auction_analysis>("auction_analysis",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, roundTime);

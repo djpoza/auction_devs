@@ -37,6 +37,12 @@ namespace cadmium::example::auction {
 			auto analysis = addComponent<Analysis>("analysis", ID_b.size(), ID_s.size()); //Fijarme en el constructor de cada un o de los dos modelos
 			//Analysis(const std::string& id, int _num_buyers, int _num_sellers): Atomic<AnalyisState>(id, AnalysisState()), num_buyers(_num_buyers), num_sellers(_num_sellers){
 
+			// Para decidir qué modelo creamos: fixed_step o el nuevo, según un nuevo parámetro.
+
+			//if parámetro = fixed_step --> creamos el fixedstep (el actual) 
+			//auto auction_comp =addComponent<auction_fixed_step>("auction_fixed_step",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, round_timer);  
+			//else... el otro
+
 			auto auction_comp =addComponent<auction>("auction",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, round_timer);  
 			//auction(const std::string id, std::vector<int> ID_b, std::vector<double> RPr, double PPrStep, std::vector<double> InitialPPr, std::vector<int> ID_s, std::vector<double> PCost, double APrStep, std::vector<double> InitialAPr, std::vector<std::vector<int>> matrix, float round_timer): Coupled(id) {
 

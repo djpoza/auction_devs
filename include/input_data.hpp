@@ -9,6 +9,7 @@ using namespace std;
 
 
 struct data_auction{
+    //int maximum_social_welfare;
     vector<double> _RPr;
     vector<double> _InitialPPr;
     int _PPrStep;
@@ -29,6 +30,7 @@ data_auction read_data(string name_file)
 
 	// Read the Data from the file 
 	// as String Vector 
+    //int maximum_social_welfare;
     vector<double> row, _RPr, _InitialPPr, _PCost, _InitialAPr; 
 	string line, word;
     int pr_step;
@@ -45,6 +47,7 @@ data_auction read_data(string name_file)
         // used for breaking words 
         stringstream s(line);
 
+        //if (line_nmbr>15) {
         if (line_nmbr>13) {
             while (getline(s, word, ';')) { 
 

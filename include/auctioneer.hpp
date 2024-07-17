@@ -29,15 +29,16 @@ namespace cadmium::example::auction {
 		int round;
 		float time_to_calculate;  //!< .
 		bool new_value;  //!< True/False variable inputted from the auctioneer.
-		bool notify; // True if we need to notify the allocation and surplus
+		bool notify; 	 // True if we need to notify the allocation and surplus
 		bool auction_over;		
 		double surplus; // New state variable (surplus will be a new output)
 		std::vector<Agentinfo> seller_ask;
 		std::vector<Agentinfo> buyer_bid;
 		
-		//! Constructor function. It sets all the attributes to 0.
+		// Default Constructor function
 		AuctioneerState(): round(1), time_to_calculate(0), new_value(false), notify(false), auction_over(false), surplus (0) {
 		} 
+		// Another Constructor function
 		AuctioneerState(float _time): round(1), time_to_calculate(_time), new_value(false), notify(false), auction_over(false), surplus (0) {
 		} 
 	};
@@ -218,6 +219,7 @@ namespace cadmium::example::auction {
 						cout << value << " ";
 					}
 					cout << endl;
+					//cout << Variables << endl;
 
 					while(getline(xx, token2, ',')) {
 						// convert the token to an integer and add it to the vector
@@ -354,7 +356,7 @@ namespace cadmium::example::auction {
 				Surplusinfo surp = {au.round, au.surplus};
 				surpl ->addMessage(surp);
 			}
-			//if(au.action_over == true){//SACAR LA ASSIGNACION FINAL}
+			if(au.auction_over == true){std::cout << "se acabó" << endl;}
 		}
 
 		/**

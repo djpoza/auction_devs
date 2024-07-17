@@ -1,6 +1,5 @@
 Round number,Buyers' surplus,Seller's surplus,Auctioneer's surplus,Social Welfare
 1,55,10,65,130
-2,55,10,65,130
-3,80,0,70,150
-4,55,0,75,130
-5,70,0,80,150
+2,55,20,75,150
+3,55,0,75,130
+4,55,0,95,150

@@ -6,6 +6,7 @@
 #include "feedback.hpp"
 #include "bidinfo.hpp"
 #include "surplusinfo.hpp"
+#include <cmath>  // Needed for std::ceil (round up)
 
 namespace cadmium::example::auction {
 	//! Class for representing the Buyer DEVS model state.
@@ -100,7 +101,22 @@ namespace cadmium::example::auction {
 			//CRM - Update purchase price if I did not get the item
 			if (local_in.gotIt == false && s.PurPr + PPrStep <= RPr)
 			{
-				s.PurPr += PPrStep;
+				//July 2024: PPrStep is now the minimum bid increment
+				// Original
+				//s.PurPr += PPrStep;
+				
+				//double bid_increment = PPrStep;
+				
+						
+				//Inc = lambda · redondear_arriba {N· [reservation_price – current_bid] / lambda}
+				srand((unsigned int)time(0));
+				double random_number = (double)rand()/(double)RAND_MAX;
+				std::cout << "Random number: " << random_number << "\n";
+				// Duda: cuando pongo s. y cuando el nombre de la variable directamente
+				double bid_increment = PPrStep * std::ceil(random_number*((RPr - s.PurPr)/PPrStep));
+				std::cout << "Bid increment: " << bid_increment << "\n";
+				s.PurPr += bid_increment;
+				
 				s.Notifyprice = true;
 			}
 		}
