@@ -9,7 +9,7 @@ using namespace std;
 
 
 struct data_auction{
-    //int maximum_social_welfare;
+    double _maximum_social_welfare;
     vector<double> _RPr;
     vector<double> _InitialPPr;
     int _PPrStep;
@@ -30,10 +30,11 @@ data_auction read_data(string name_file)
 
 	// Read the Data from the file 
 	// as String Vector 
-    //int maximum_social_welfare;
+    //int max_sw;
     vector<double> row, _RPr, _InitialPPr, _PCost, _InitialAPr; 
 	string line, word;
     int pr_step;
+    double max_sw;
     vector<vector<int>> _matrix;
     vector<int> row_m;
 
@@ -47,8 +48,8 @@ data_auction read_data(string name_file)
         // used for breaking words 
         stringstream s(line);
 
-        //if (line_nmbr>15) {
-        if (line_nmbr>13) {
+        //if (line_nmbr>13) {
+        if (line_nmbr>15) {
             while (getline(s, word, ';')) { 
 
                 // add all the column data of a row to a vector
@@ -66,27 +67,32 @@ data_auction read_data(string name_file)
 
                 // add all the column data 
                 // of a row to a vector
-                if (i == 2|| i == 5) {
-                    int nmbr = stoi(word); //stoi convert string to integer
+                //if (i == 2|| i == 5) {
+                if (i==0){
+                    double number = stod(word); //stod converts string to double
+                    max_sw = number;                   
+                } else if (i == 3 || i == 6) {
+                    int nmbr = stoi(word); //stoi converts string to integer
                     pr_step = nmbr;
                 } else {
                     double nmbr = stof(word); //stoi convert string to integer
                     row.push_back(nmbr); 
                 }
                 
-            } 
-
-            if (i==0){
-                local_data._RPr = row;
+             } 
+               if (i==0) {
+                local_data._maximum_social_welfare = max_sw;
             } else if (i==1){
+                local_data._RPr = row;
+            } else if (i==2){
                 local_data._InitialPPr = row;
-            } else if (i==2) {
-                local_data._PPrStep = pr_step;
             } else if (i==3) {
-                local_data._PCost = row;
+                local_data._PPrStep = pr_step;
             } else if (i==4) {
-                local_data._InitialAPr = row;
+                local_data._PCost = row;
             } else if (i==5) {
+                local_data._InitialAPr = row;
+            } else if (i==6) {
                 local_data._APrStep = pr_step;
             }
             i++;

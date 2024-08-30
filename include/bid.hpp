@@ -105,16 +105,16 @@ namespace cadmium::example::auction {
 				// Original
 				//s.PurPr += PPrStep;
 				
-				//double bid_increment = PPrStep;
+				double bid_increment = PPrStep;
 				
 						
 				//Inc = lambda · redondear_arriba {N· [reservation_price – current_bid] / lambda}
-				srand((unsigned int)time(0));
-				double random_number = (double)rand()/(double)RAND_MAX;
-				std::cout << "Random number: " << random_number << "\n";
+				//srand((unsigned int)time(0));
+				//double random_number = (double)rand()/(double)RAND_MAX;
+				//std::cout << "Random number: " << random_number << "\n";
 				// Duda: cuando pongo s. y cuando el nombre de la variable directamente
-				double bid_increment = PPrStep * std::ceil(random_number*((RPr - s.PurPr)/PPrStep));
-				std::cout << "Bid increment: " << bid_increment << "\n";
+				//double bid_increment = PPrStep * std::ceil(random_number*((RPr - s.PurPr)/PPrStep));
+				//std::cout << "Bid increment: " << bid_increment << "\n";
 				s.PurPr += bid_increment;
 				
 				s.Notifyprice = true;

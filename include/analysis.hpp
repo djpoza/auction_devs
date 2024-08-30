@@ -46,7 +46,8 @@ namespace cadmium::example::auction {
 	class Analysis : public Atomic<AnalysisState> { //! Atomic models MUST inherit from the cadmium::Atomic<S> class
 	 private:
 	 	int num_buyers;
-		int num_sellers;                            
+		int num_sellers; 
+		double max_social_welfare;                            
 	 public:
 		Port<Surplusinfo> in_buyer;       	 //!< Input Port for receiving the buyer surplus
 		Port<Surplusinfo> in_seller;      	 //!< Input Port for receiving the seller surplus
@@ -55,6 +56,8 @@ namespace cadmium::example::auction {
 		Port<double> out_buyer_surplus;		 //!< Output Port for sending the total buyer surplus in the current round
 		Port<double> out_auctioneer_surplus; //!< Output Port for sending the auctioneer surplus in the current round
 		Port<double> out_seller_surplus;     //!< Output Port for sending the total seller surplus in the current round
+		Port<double> out_maximum_welfare;    //!< Output Port for sending the maximum theoretical social welfare
+
 	
 		/**
 		 * Constructor function for Analysis DEVS model.
@@ -62,7 +65,7 @@ namespace cadmium::example::auction {
 		
 		 */ 
 			
-		Analysis(const std::string& id, int _num_buyers, int _num_sellers): Atomic<AnalysisState>(id, AnalysisState()), num_buyers(_num_buyers), num_sellers(_num_sellers){
+		Analysis(const std::string& id, int _num_buyers, int _num_sellers, double _max_social_welfare): Atomic<AnalysisState>(id, AnalysisState()), num_buyers(_num_buyers), num_sellers(_num_sellers), max_social_welfare(_max_social_welfare){
 			//num_buyers =_num_buyers; (es equivalente a lo anterior)
 			in_buyer = addInPort<Surplusinfo>("in_buyer");
 			in_seller = addInPort<Surplusinfo>("in_seller");
@@ -71,6 +74,7 @@ namespace cadmium::example::auction {
 			out_buyer_surplus = addOutPort<double>("out_buyer_surplus");
 			out_seller_surplus = addOutPort<double>("out_seller_surplus");
 			out_auctioneer_surplus = addOutPort<double>("out_auctioneer_surplus");
+			out_maximum_welfare = addOutPort<double>("out_maximum_social_welfare");
 		}
 
 		/**
@@ -169,6 +173,7 @@ namespace cadmium::example::auction {
 				out_buyer_surplus->addMessage(s.total_surplus_buyers);	
 				out_seller_surplus->addMessage(s.total_surplus_sellers);
 				out_auctioneer_surplus->addMessage(s.total_surplus_auctioneer);
+				out_maximum_welfare->addMessage(max_social_welfare);
 
 				//write_to_csv(s.round, s.total_surplus_buyers, s.total_surplus_sellers, s.total_surplus);
 				ofstream outputFile;
@@ -176,10 +181,10 @@ namespace cadmium::example::auction {
    	 			if (outputFile.is_open()) {
    	    		 	// Add headers if the file is open
    	    		 	if (outputFile.tellp() == 0) {
-   	     		   	outputFile << "Round number,Buyers' surplus,Seller's surplus,Auctioneer's surplus,Social Welfare\n";
+   	     		   	outputFile << "Round number;Buyers' surplus;Seller's surplus;Auctioneer's surplus;Social Welfare;Maximum social welfare;Efficiency\n";
    	    	 		}
    	     			// Write values of count and objective_function on a new line of the csv file
-   	     			outputFile << s.round << "," << s.total_surplus_buyers << "," << s.total_surplus_sellers << "," << s.total_surplus_auctioneer << "," << s.total_surplus << "\n";
+   	     			outputFile << s.round << ";" << s.total_surplus_buyers << ";" << s.total_surplus_sellers << ";" << s.total_surplus_auctioneer << ";" << s.total_surplus << ";" << max_social_welfare << ";" << (s.total_surplus / max_social_welfare)*100 << "\n";
 			 	    outputFile.close();
   	  				} else {
   	      				cerr << "Error when opening file" << endl;

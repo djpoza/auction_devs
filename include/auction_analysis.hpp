@@ -17,7 +17,8 @@ namespace cadmium::example::auction {
 		Port<double> total_buyer_surplus;
 		Port<double> total_seller_surplus;
 		Port<double> total_auctioneer_surplus;
-
+		Port<double> maximum_theoretical_social_welfare;
+		
 		/**
 		 * Constructor function for the auction analysis model.
 		 * @param id ID of the bid model.
@@ -25,16 +26,18 @@ namespace cadmium::example::auction {
 		 * @param obsTime time to wait by the Transducer before asking the Generator to stop creating Job objects.
 		 */
 		
-		
-		auction_analysis(const std::string id, std::vector<int> ID_b, std::vector<double> RPr, double PPrStep, std::vector<double> InitialPPr, std::vector<int> ID_s, std::vector<double> PCost, double APrStep, std::vector<double> InitialAPr, std::vector<std::vector<int>> matrix, float round_timer): Coupled(id) {
+		//AGO2024: added maximum_social_welfare 
+		auction_analysis(const std::string id, double maximum_social_welfare, std::vector<int> ID_b, std::vector<double> RPr, double PPrStep, std::vector<double> InitialPPr, std::vector<int> ID_s, std::vector<double> PCost, double APrStep, std::vector<double> InitialAPr, std::vector<std::vector<int>> matrix, float round_timer): Coupled(id) {
 			
 			auction_finished = addOutPort<bool>("auction_finished");
 			social_welfare = addOutPort<double>("social_welfare");
 			total_buyer_surplus = addOutPort<double>("total_buyer_surplus"); 
 			total_seller_surplus = addOutPort<double>("total_seller_surplus");
 			total_auctioneer_surplus = addOutPort<double>("total_auctioneer_surplus");
+			maximum_theoretical_social_welfare = addOutPort<double>("maximum_social_welfare");
 			
-			auto analysis = addComponent<Analysis>("analysis", ID_b.size(), ID_s.size()); //Fijarme en el constructor de cada un o de los dos modelos
+			//AGO2024: added maximum_social_welfare
+			auto analysis = addComponent<Analysis>("analysis", ID_b.size(), ID_s.size(),maximum_social_welfare); //Fijarme en el constructor de cada uno de los dos modelos
 			//Analysis(const std::string& id, int _num_buyers, int _num_sellers): Atomic<AnalyisState>(id, AnalysisState()), num_buyers(_num_buyers), num_sellers(_num_sellers){
 
 			// Para decidir qué modelo creamos: fixed_step o el nuevo, según un nuevo parámetro..
@@ -52,8 +55,8 @@ namespace cadmium::example::auction {
 			addCoupling(analysis->out_buyer_surplus, total_buyer_surplus);
 			addCoupling(analysis->out_seller_surplus, total_seller_surplus);
 			addCoupling(analysis->out_auctioneer_surplus, total_auctioneer_surplus);
+			addCoupling(analysis->out_maximum_welfare, maximum_theoretical_social_welfare);
 			
-			// July 5: David adds these 3 missing couplings:
 			addCoupling(auction_comp->buyersurpl, analysis->in_buyer);
 			addCoupling(auction_comp->sellersurpl, analysis->in_seller);	
 			addCoupling(auction_comp->actioneersurpl, analysis->in_auctioneer);		

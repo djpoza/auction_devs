@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
     string name_f = "data_auction.txt";
     vector<double> RPr, InitialPPr, PCost, InitialAPr;
     int PPrStep, APrStep;
+    double maximum_social_welfare;
     vector<vector<int>> matrix;
     data_auction l_data = read_data(name_f);
     matrix = l_data._Matrix;
@@ -37,6 +38,7 @@ int main(int argc, char *argv[]) {
     RPr = l_data._RPr;
     InitialPPr = l_data._InitialPPr;
     PPrStep = l_data._PPrStep;
+    maximum_social_welfare = l_data._maximum_social_welfare;
     std::vector<int> ID_s;
     for (int j=1; j<=matrix.size(); j++){
         ID_s.push_back(j);
@@ -46,6 +48,8 @@ int main(int argc, char *argv[]) {
     APrStep = l_data._APrStep;
     matrix = l_data._Matrix;
 
+    cout << "Maximum social welfare: " << endl;
+    cout << maximum_social_welfare << endl;
     cout << "RPr: " << endl;
     for (int i=0; i<RPr.size(); i++){
         cout << RPr[i] << " ";
@@ -78,11 +82,13 @@ int main(int argc, char *argv[]) {
         cout << endl;
     }
     
-    //Hard coded y cascadear (revisar los constructores de los modelos que hay debajo para que recepcionen el valor. El orden de los parámetros matters)
-    double maximum_social_welfare = 150;
+    //AGO 2024: maximum_social_welfare. Cascadear (revisar los constructores de los modelos que hay debajo para que recepcionen el valor, el orden de los parámetros matters)
+    //AGO 2024: Modification of data_auction.txt and input_data.hpp to read the theoretical maximum social welfare
+    
     // Modify the following line to include the compilation of the new auction_analysis model
     //auto model = std::make_shared<auction>("auction",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, roundTime); 
-    auto model = std::make_shared<auction_analysis>("auction_analysis",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, roundTime);
+    //auto model = std::make_shared<auction_analysis>("auction_analysis",  ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, roundTime);
+    auto model = std::make_shared<auction_analysis>("auction_analysis", maximum_social_welfare, ID_b,RPr, PPrStep, InitialPPr ,ID_s ,PCost , APrStep, InitialAPr , matrix, roundTime);
 
 
    // auto model = std::make_shared<auction>("auction",{"1","2","3"}, {40.0,30.0,20.0}, 5.0, {20.0,15.0,10.0}, {"1","2","3"}, {20.0,30.0,50.0}, 10.0, {30.0,50.0,70.0}, 4.0); 
