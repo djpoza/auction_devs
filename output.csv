@@ -1,7 +1,6 @@
-
-Round number,Buyers' surplus,Seller's surplus,Auctioneer's surplus,Social Welfare
-1,55,10,65,130
-2,55,10,65,130
-3,80,0,70,150
-4,55,0,75,130
-5,70,0,80,150
+Round number;Buyers' surplus;Seller's surplus;Auctioneer's surplus;Social Welfare;Maximum social welfare;Efficiency
+1;55;10;65;130;150;86.6667
+2;55;10;65;130;150;86.6667
+3;80;0;70;150;150;100
+4;55;0;75;130;150;86.6667
+5;70;0;80;150;150;100
